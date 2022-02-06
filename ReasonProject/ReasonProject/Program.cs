@@ -1,7 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using System.Globalization;
+using System.Reflection;
 
 using ReasonProject;
+using ReasonProject.Samples;
 using Reason.Results;
 using Reason.Utils;
 using Reason.I18n;
@@ -9,322 +10,196 @@ using Reason.Reasons;
 
 // This program introduce some usages of the library.
 
-WriteLine("Result Class Samples:");
+Utils.WriteLine("Hello. This is 'Result' class samples.");
+Utils.WriteLine("");
 
-Result ret;
-int sampleNo = 0;
-int indent = 2;
+ShowHelp();
 
+IEnumerable<Tuple<int, ISample>> samples = CreateSampleList().OrderBy(x => x.Category).ThenBy(x => x.Title).Select((x,i) => new Tuple<int, ISample>(i,x)).ToList();
+
+while (EvalCommand(RequestInput(), samples)) ;
+
+string RequestInput()
 {
-    // Success case.
-    WriteLine("");
-    WriteLine($"Sample {sampleNo}:");
-
-    ret = ExecCalcClassDiv(1d, 2d, indent);
-
-    if (ret.IsFailed()) WriteLine("Failed!", indent);
-    else WriteLine("Succeeded!", indent);
-
-    WriteLine("");
-    WriteLine("Show All Results:", indent);
-
-    ResultInspector.InspectAll(ret, (result, depth, index, parent) => { WriteLine(result.ToString(), indent); });
-
-    sampleNo++;
+    Utils.Write("$ ");
+    return Console.ReadLine() ?? "";
 }
 
-// Change context
-I18nContext.ChangeContext(new CultureInfo("en-US", false));
-
+void ShowHelp()
 {
-    // See the result of changing context.
-    WriteLine("");
-    WriteLine($"Sample {sampleNo}:");
+    int commandIndent = 2;
+    int descIndent = 4;
 
-    ret = ExecCalcClassDiv(1d, 2d, indent);
+    Utils.WriteLine("Command List");
 
-    if (ret.IsFailed()) WriteLine("Failed!", indent);
-    else WriteLine("Succeeded!", indent);
+    Utils.WriteLine("h", commandIndent);
+    Utils.WriteLine("help", commandIndent);
+    Utils.WriteLine("Show this help.", descIndent);
 
-    WriteLine("");
-    WriteLine("Show All Results:", indent);
+    Utils.WriteLine("");
+    Utils.WriteLine("ls [<Category>]", commandIndent);
+    Utils.WriteLine("List samples. If <Category> is specified, only the samples belong the category is shown.", descIndent);
 
-    ResultInspector.InspectAll(ret, (result, depth, index, parent) => { WriteLine(result.ToString(), indent); });
+    Utils.WriteLine("");
+    Utils.WriteLine("ls categories", commandIndent);
+    Utils.WriteLine("ls c", commandIndent);
+    Utils.WriteLine("List sample categories.", descIndent);
 
-    sampleNo++;
+    Utils.WriteLine("");
+    Utils.WriteLine("do all", commandIndent);
+    Utils.WriteLine("do [<Category>]", commandIndent);
+    Utils.WriteLine("do [<Index>]", commandIndent);
+    Utils.WriteLine("Execute samples. If <Category> is specified, only the samples belong the category is executed.", descIndent);
+    Utils.WriteLine("If <Index> is specified, only that sample is executed.", descIndent);
+
+    Utils.WriteLine("");
+    Utils.WriteLine("q", commandIndent);
+    Utils.WriteLine("quit", commandIndent);
+    Utils.WriteLine("exit", commandIndent);
+    Utils.WriteLine("Quit this program.", descIndent);
 }
 
-// Restore the context
-I18nContext.ChangeContext(CultureInfo.CurrentCulture);
-
+bool EvalCommand(string command, IEnumerable<Tuple<int, ISample>> samples)
 {
-    // Failed case.
-    WriteLine("");
-    WriteLine($"Sample {sampleNo}:");
-
-    ret = ExecCalcClassDiv(1d, 0d, indent);
-
-    if (ret.IsFailed()) WriteLine("Failed!", indent);
-    else WriteLine("Succeeded!", indent);
-
-    WriteLine("");
-    WriteLine("Show All Results:", indent);
-
-    ResultInspector.InspectAll(ret, (result, depth, index, parent) => { WriteLine(result.ToString(), indent); });
-
-    sampleNo++;
-}
-
-{
-    // Throwing exception case.
-    WriteLine("");
-    WriteLine($"Sample {sampleNo}:");
-
-    Result ret0;
-
-    Result ret1 = Result.CatchAll(() =>
+    switch(command)
     {
-        double tmp = ExecCalcClassDivException(1d, 0d, indent);
-        return Result<double>.MakeSuccessFirst(tmp);
-    }, useMessagePropertyAsMessage: true);
+        case string x when x == "q" || x == "quit" || x == "exit":
+            Utils.WriteLine("Bye.");
+            return false;
 
-    Result ret2 = Result.CatchAll(() =>
+        case string x when string.IsNullOrWhiteSpace(command):
+            return true;
+
+        case string x when x == "h" || x == "help":
+            ShowHelp();
+            return true;
+
+        case string x when x == "ls categories" || x == "ls c":
+            ShowCategories(samples);
+            return true;
+
+        case string x when x == "ls" || x.StartsWith("ls "):
+            ListSamples(samples, x);
+            return true;
+
+        case string x when x == "do all":
+            ExecAllSamples(samples);
+            return true;
+
+        case string x when x == "do" || x.StartsWith("do "):
+            ExecSamples(samples, x);
+            return true;
+
+        default:
+            Utils.WriteLine("Command Not Found.");
+            return true;
+    }
+}
+
+void ListSamples(IEnumerable<Tuple<int, ISample>> samples, string command)
+{
+    string parsedCommand = command.Substring(2).TrimStart();
+
+    foreach (var s in samples)
     {
-        double tmp = ExecCalcClassDivException(1d, 0d, indent);
-        return Result<double>.MakeSuccessFirst(tmp);
-    }, useMessagePropertyAsMessage: false);
+        if (!string.IsNullOrWhiteSpace(parsedCommand))
+        {
+            if (!s.Item2.Category.StartsWith(parsedCommand)) continue;
+        }
 
-    ret0 = Result.MakeAllSuccess(new FailedReasonWithMessage(""), ret1, ret2);
-    ret = ret0;
-
-    if (ret.IsFailed()) WriteLine("Failed!", indent);
-    else WriteLine("Succeeded!", indent);
-
-    WriteLine("");
-    WriteLine("Show All Results:", indent);
-
-    int ret_i = 0;
-    ResultInspector.InspectAll(ret, (result, depth, index, parent) => { WriteLine($"ret{ret_i++}:{result}", indent); });
-
-    sampleNo++;
+        Utils.WriteLine($"{s.Item1}:{s.Item2.Title}, {s.Item2.Category}");
+    }
 }
 
+void ShowCategories(IEnumerable<Tuple<int, ISample>> samples)
 {
-    // Depth-first search.
-    WriteLine("");
-    WriteLine($"Sample {sampleNo}:");
+    int categoryIndent = 2;
+    var categories = samples.Select(s => new { category = s.Item2.Category.Split('/'), sample = s.Item2 }).GroupBy(s => s.category[0]).OrderBy(s => s.Key);
 
-    ret = MakeNestedResult(indent);
-
-    if (ret.IsFailed()) WriteLine("Failed!", indent);
-    else WriteLine("Succeeded!", indent);
-
-    WriteLine("");
-    WriteLine("Show All Results:", indent);
-
-    int callCount = 0;
-    ResultInspector.InspectAll(ret, (result, depth, index, parent) => { WriteLine($"{callCount++}:{result}, depth={depth}", indent); });
-
-    sampleNo++;
+    foreach (var c in categories)
+    {
+        Utils.WriteLine(c.Key);
+        foreach (string name in c.Select(x => x.sample.Category).Distinct().OrderBy(x => x))
+        {
+            Utils.WriteLine($"{name}", categoryIndent);
+        }
+    }
 }
 
+void ExecAllSamples(IEnumerable<Tuple<int, ISample>> samples)
 {
-    // Breadth-first search.
-    WriteLine("");
-    WriteLine($"Sample {sampleNo}:");
+    int sampleIndent = 2;
 
-    ret = MakeNestedResult(indent);
+    foreach (var s in samples)
+    {
+        Utils.WriteLine("");
+        Utils.WriteLine($"Sample: {s.Item2.Title}, {s.Item2.Category}");
 
-    if (ret.IsFailed()) WriteLine("Failed!", indent);
-    else WriteLine("Succeeded!", indent);
-
-    WriteLine("");
-    WriteLine("Show All Results:", indent);
-
-    int callCount = 0;
-    ResultInspector.InspectAll(ret, (result, depth, index, parent) => { WriteLine($"{callCount++}:{result}, depth={depth}", indent); }, depthFirstSearch: false);
-
-    sampleNo++;
+        s.Item2.Exec(sampleIndent);
+    }
 }
 
+void ExecSamples(IEnumerable<Tuple<int, ISample>> samples, string command)
 {
-    // Depth-first search.
-    WriteLine("");
-    WriteLine($"Sample {sampleNo}:");
+    int sampleIndent = 2;
 
-    ret = MakeNestedResult(indent);
-    // Inspect a subtree.
-    ret = ret.NextResults.ElementAt(1);
+    string parsedCommand = command.Substring(2).TrimStart();
 
-    if (ret.IsFailed()) WriteLine("Failed!", indent);
-    else WriteLine("Succeeded!", indent);
-
-    WriteLine("");
-    WriteLine("Show All Results:", indent);
-
-    int callCount = 0;
-    ResultInspector.InspectAll(ret, (result, depth, index, parent) => { WriteLine($"{callCount++}:{result}, depth={depth}", indent); });
-
-    sampleNo++;
-}
-
-{
-    // Depth-first search.
-    WriteLine("");
-    WriteLine($"Sample {sampleNo}:");
-
-    ret = MakeNestedResult(indent);
-
-    if (ret.IsFailed()) WriteLine("Failed!", indent);
-    else WriteLine("Succeeded!", indent);
-
-    WriteLine("");
-    WriteLine("Show All Results:", indent);
-
-    // Pruning a subtree.
-    int callCount = 0;
-    ResultInspector.InspectWhere(ret, (result, depth, index, parent) => { WriteLine($"{callCount++}:{result}, depth={depth}", indent); },
-        (result, depth, index, parent) => true,
-        (result, depth, index, parent) => (depth == 1 && index == 1));
-
-    sampleNo++;
-}
-
-{
-    // Depth-first search.
-    WriteLine("");
-    WriteLine($"Sample {sampleNo}:");
-
-    ret = MakeNestedResult2(indent);
-
-    if (ret.IsFailed()) WriteLine("Failed!", indent);
-    else WriteLine("Succeeded!", indent);
-
-    WriteLine("");
-    WriteLine("Show All Results:", indent);
-
-    int callCount = 0;
-    ResultInspector.InspectAll(ret, (result, depth, index, parent) => { WriteLine($"{callCount++}:{result}, depth={depth}", indent); });
-
-    sampleNo++;
-}
-
-{
-    // Breadth-first search.
-    WriteLine("");
-    WriteLine($"Sample {sampleNo}:");
-
-    ret = MakeNestedResult2(indent);
-
-    if (ret.IsFailed()) WriteLine("Failed!", indent);
-    else WriteLine("Succeeded!", indent);
-
-    WriteLine("");
-    WriteLine("Show All Results:", indent);
-
-    int callCount = 0;
-    ResultInspector.InspectAll(ret, (result, depth, index, parent) => { WriteLine($"{callCount++}:{result}, depth={depth}", indent); }, depthFirstSearch: false);
-
-    sampleNo++;
-}
-
-/// <summary>
-/// Write line(s) with some indents. 
-/// </summary>
-void WriteLine(string line, int indent = 0)
-{
-    Console.WriteLine(line.PadLeft(line.Length + indent).Replace(Environment.NewLine, Environment.NewLine.PadRight(Environment.NewLine.Length + indent)));
-}
-
-Result ExecCalcClassDiv(double numerator, double denominator, int indent)
-{
-    SampleCalcClass calc = new SampleCalcClass();
+    if (string.IsNullOrWhiteSpace(parsedCommand))
+    {
+        Utils.WriteLine("'do' command must have an argument.");
+        return;
+    }
     
-    Result<double> result = calc.Divide(numerator, denominator);
-
-    Result ret = result.Whether((v) =>
+    int index = -1;
+    if (int.TryParse(parsedCommand, out int idx))
     {
-        WriteLine($"Result is {v}", indent);
-        return Result.MakeSuccessFirst();
-    },
-    (r) =>
+        if (idx < 0)
+        {
+            Utils.WriteLine("The index must be >= 0.");
+            return;
+        }
+
+        index = idx;
+    }
+
+    foreach (var s in samples)
     {
-        WriteLine($"Failed reason is {r.Message}", indent);
-        return result;
-    });
+        if (index < 0)
+        {
+            if (!string.IsNullOrWhiteSpace(parsedCommand))
+            {
+                if (!s.Item2.Category.StartsWith(parsedCommand)) continue;
+            }
+        }
+        else
+        {
+            if (s.Item1 != index) continue;
+        }
 
-    return ret;
+        Utils.WriteLine("");
+        Utils.WriteLine($"Sample: {s.Item2.Title}, {s.Item2.Category}");
+
+        s.Item2.Exec(sampleIndent);
+    }
 }
 
-double ExecCalcClassDivException(double numerator, double denominator, int indent)
+IEnumerable<ISample> CreateSampleList()
 {
-    SampleCalcClass calc = new SampleCalcClass();
+    List<ISample> sampleList = new List<ISample>();
+    string sampleNamespace = typeof(ISample).Namespace ?? "ReasonProject.Samples";
 
-    Result<double> result = calc.Divide(numerator, denominator);
+    Assembly assembly = Assembly.GetExecutingAssembly();
+    foreach (Type type in assembly.GetTypes())
+    {
+        if (type.Namespace == null || !type.Namespace.StartsWith(sampleNamespace)) continue;
+        if (!type.IsClass || !typeof(ISample).IsAssignableFrom(type)) continue;
+        if (!type.Name.StartsWith("Sample")) continue;
 
-    return result.Get();
-}
+        if (Activator.CreateInstance(type) is not ISample sample) continue;
 
-Result MakeNestedResult(int indent)
-{
-    /*
-     * [14]
-     *  |_______________
-     *  |               |
-     * [6]             [13]
-     *  |_______        |_______
-     *  |       |       |       |
-     * [2]     [5]     [9]     [12]
-     *  |___    |___    |___    |____
-     *  |   |   |   |   |   |   |    |
-     * [0] [1] [3] [4] [7] [8] [10] [11]
-     *  
-     */
+        sampleList.Add(sample);
+    }
 
-    Result result0 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={0}"));
-    Result result1 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={1}"));
-    Result result2 = Result.MakeAllSuccess(new List<Result> { result0, result1}, new FailedReasonWithMessage($"Id={2}"));
-
-    Result result3 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={3}"));
-    Result result4 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={4}"));
-    Result result5 = Result.MakeAllSuccess(new List<Result> { result3, result4 }, new FailedReasonWithMessage($"Id={5}"));
-
-    Result result6 = Result.MakeAllSuccess(new List<Result> { result2, result5 }, new FailedReasonWithMessage($"Id={6}"));
-
-    Result result7 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={7}"));
-    Result result8 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={8}"));
-    Result result9 = Result.MakeAllSuccess(new List<Result> { result7, result8 }, new FailedReasonWithMessage($"Id={9}"));
-
-    Result result10 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={10}"));
-    Result result11 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={11}"));
-    Result result12 = Result.MakeAllSuccess(new List<Result> { result10, result11 }, new FailedReasonWithMessage($"Id={12}"));
-
-    Result result13 = Result.MakeAllSuccess(new List<Result> { result9, result12 }, new FailedReasonWithMessage($"Id={13}"));
-
-    Result result14 = Result.MakeAllSuccess(new List<Result> { result6, result13 }, new FailedReasonWithMessage($"Id={14}"));
-
-    return result14;
-}
-
-Result MakeNestedResult2(int indent)
-{
-    /*
-     * [4]
-     *  |___ ___
-     *  |   |   |
-     *  |  [3] [2]
-     *  |_______|
-     *  |       |
-     * [0]     [1]
-     *  
-     */
-
-    Result result0 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={0}"));
-    Result result1 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={1}"));
-    Result result2 = Result.MakeAllSuccess(new List<Result> { result0, result1 }, new FailedReasonWithMessage($"Id={2}"));
-
-    Result result3 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={3}"));
-    Result result4 = Result.MakeAllSuccess(new List<Result> { result0, result3, result2 }, new FailedReasonWithMessage($"Id={4}"));
-
-    return result4;
+    return sampleList;
 }
