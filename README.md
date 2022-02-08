@@ -222,7 +222,7 @@ internal interface ISample
 ```
 
 ### Internationalization
-Inherit I18nContext, name the class 'ContextXXX' (XXX must be 'Three letter of ISO language name' ([link to MS Docs](https://docs.microsoft.com/ja-jp/dotnet/api/system.globalization.cultureinfo.threeletterisolanguagename?view=net-6.0#system-globalization-cultureinfo-threeletterisolanguagename))), and throw it in 'I18n/Context' folder. The class should be return the instances which has messages for the language (or just leave it as so to use default ones).
+Inherit I18nContext, name the class 'ContextXXX' (XXX must be 'Three letter of ISO language name' ([link to MS Docs](https://docs.microsoft.com/ja-jp/dotnet/api/system.globalization.cultureinfo.threeletterisolanguagename?view=net-6.0#system-globalization-cultureinfo-threeletterisolanguagename))), and throw it in 'I18n/Context' folder. The class should be return the instances which has messages for the language (or just leave it so as to use default ones).
 ```
 internal class ContextJPN : I18nContext 
 {
