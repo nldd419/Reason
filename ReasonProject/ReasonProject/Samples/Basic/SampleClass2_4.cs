@@ -14,7 +14,9 @@ namespace ReasonProject.Samples.Basic
     {
         public override string CategoryName => "Exception";
 
-        public string Title => "6.Automatic Exception Catch";
+        public string Title => "Automatic Exception Catch";
+
+        public int Order => 6;
 
         public string[] Description => new string[]
         {

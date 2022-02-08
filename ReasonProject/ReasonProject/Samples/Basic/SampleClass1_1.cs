@@ -14,7 +14,9 @@ namespace ReasonProject.Samples.Basic
     {
         public override string CategoryName => "Basic";
 
-        public string Title => "1.Get Return Value";
+        public string Title => "Get Return Value";
+
+        public int Order => 1;
 
         public string[] Description => new string[]
         {

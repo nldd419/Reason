@@ -16,7 +16,9 @@ namespace ReasonProject.Samples.Basic
     {
         public override string CategoryName => "Inspection";
 
-        public string Title => "12.Get Subtree";
+        public string Title => "Get Subtree";
+
+        public int Order => 11;
 
         public string[] Description => new string[]
         {

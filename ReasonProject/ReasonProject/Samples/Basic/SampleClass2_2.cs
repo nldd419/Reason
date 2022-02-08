@@ -14,7 +14,9 @@ namespace ReasonProject.Samples.Basic
     {
         public override string CategoryName => "Exception";
 
-        public string Title => "4.Catch Exception And Show Stacktrace";
+        public string Title => "Catch Exception And Show Stacktrace";
+
+        public int Order => 4;
 
         public string[] Description => new string[]
         {

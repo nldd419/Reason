@@ -16,7 +16,9 @@ namespace ReasonProject.Samples.Basic
     {
         public override string CategoryName => "Inspection";
 
-        public string Title => "10.Inspect Result Tree By Depth-First Search";
+        public string Title => "Inspect Result Tree By Depth-First Search";
+
+        public int Order => 9;
 
         public string[] Description => new string[]
         {

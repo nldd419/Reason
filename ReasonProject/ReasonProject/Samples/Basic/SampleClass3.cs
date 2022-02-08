@@ -16,7 +16,9 @@ namespace ReasonProject.Samples.Basic
     {
         public override string CategoryName => "Culture";
 
-        public string Title => "9.Change Culture";
+        public string Title => "Change Culture";
+
+        public int Order => 8;
 
         public string[] Description => new string[]
         {

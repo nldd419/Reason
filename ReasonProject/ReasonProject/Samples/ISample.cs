@@ -12,5 +12,6 @@ namespace ReasonProject.Samples
         string Title { get; }
         string[] Description { get; }
         void Exec(int indent);
+        int Order { get; }
     }
 }

@@ -14,7 +14,9 @@ namespace ReasonProject.Samples.Basic
     {
         public override string CategoryName => "Basic";
 
-        public string Title => "2.Handling Failure";
+        public string Title => "Handling Failure";
+
+        public int Order => 2;
 
         public string[] Description => new string[]
         {

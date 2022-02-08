@@ -16,7 +16,9 @@ namespace ReasonProject.Samples.Basic
     {
         public override string CategoryName => "Inspection";
 
-        public string Title => "14.Inspect Share Child Graph";
+        public string Title => "Inspect Share Child Graph";
+
+        public int Order => 13;
 
         public string[] Description => new string[]
         {

@@ -10,6 +10,7 @@ using Reason.Reasons;
 
 // This program introduce some usages of the library.
 
+// Processing command line args.
 string[] cmdArgs = Environment.GetCommandLineArgs();
 if(cmdArgs.Length > 2)
 {
@@ -26,14 +27,22 @@ if(cmdArgs.Length > 2)
     }
 
     bool force = false;
-    if (cmdArgs.Length > 3 && cmdArgs[3] == "-f")
+    bool append = false;
+
+    Action<string, string, Action> commonFlagsAction = (arg, flg, action) =>
     {
-        force = true;
+        if (arg == flg) action();
+    };
+
+    for(int i = 3; i < cmdArgs.Length; i++)
+    {
+        commonFlagsAction(cmdArgs[i], "-f", () => force = true);
+        commonFlagsAction(cmdArgs[i], "-a", () => append = true);
     }
 
     try
     {
-        Utils.TextWriter = new StreamWriter(new FileStream(cmdArgs[2], force ? FileMode.Append : FileMode.CreateNew, FileAccess.Write, FileShare.Read));
+        Utils.TextWriter = new StreamWriter(new FileStream(cmdArgs[2], force ? ( append ? FileMode.Append : FileMode.OpenOrCreate) : FileMode.CreateNew, FileAccess.Write, FileShare.Read));
     }
     catch(Exception ex)
     {
@@ -42,12 +51,13 @@ if(cmdArgs.Length > 2)
     }
 }
 
+// Start the main codes.
 Utils.WriteLine("Hello. This is 'Result' class samples.");
 Utils.WriteLine("");
 
 ShowHelp();
 
-IEnumerable<Tuple<int, ISample>> samples = CreateSampleList().OrderBy(x => x.Category).ThenBy(x => x.Title).Select((x,i) => new Tuple<int, ISample>(i,x)).ToList();
+IEnumerable<Tuple<int, ISample>> samples = CreateSampleList().OrderBy(x => x.Order).ThenBy(x => x.Category).ThenBy(x => x.Title).Select((x,i) => new Tuple<int, ISample>(i,x)).ToList();
 
 while (EvalCommand(RequestInput(), samples)) ;
 
@@ -142,7 +152,7 @@ void ListSamples(IEnumerable<Tuple<int, ISample>> samples, string command)
             if (!s.Item2.Category.StartsWith(parsedCommand)) continue;
         }
 
-        Utils.WriteLine($"{s.Item1}: \"{s.Item2.Title}, {s.Item2.Category}\"");
+        Utils.WriteLine($"{s.Item1}: \"{s.Item2.Order}.{s.Item2.Title}, {s.Item2.Category}\"");
     }
 }
 
@@ -168,7 +178,7 @@ void ExecAllSamples(IEnumerable<Tuple<int, ISample>> samples)
     foreach (var s in samples)
     {
         Utils.WriteLine("");
-        Utils.WriteLine($"Sample: {s.Item2.Title}, {s.Item2.Category}");
+        Utils.WriteLine($"Sample: {s.Item2.Order}.{s.Item2.Title}, {s.Item2.Category}");
         Utils.Description(sampleIndent, s.Item2.Description);
         Utils.WriteLine("", sampleIndent);
 
@@ -215,7 +225,7 @@ void ExecSamples(IEnumerable<Tuple<int, ISample>> samples, string command)
         }
 
         Utils.WriteLine("");
-        Utils.WriteLine($"Sample: {s.Item2.Title}, {s.Item2.Category}");
+        Utils.WriteLine($"Sample: {s.Item2.Order}.{s.Item2.Title}, {s.Item2.Category}");
         Utils.Description(sampleIndent, s.Item2.Description);
         Utils.WriteLine("", sampleIndent);
 
