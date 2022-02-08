@@ -1,0 +1,694 @@
+Hello. This is 'Result' class samples.
+
+Command List
+  h
+  help
+    Show this help.
+
+  ls [<Category>]
+    List samples. If <Category> is specified, only the samples belong the category is shown.
+
+  ls categories
+  ls c
+    List sample categories.
+
+  do all
+  do [<Category>]
+  do [<Index>]
+    Execute samples. If <Category> is specified, only the samples belong the category is executed.
+    If <Index> is specified, only that sample is executed.
+
+  q
+  :q
+  quit
+  exit
+    Quit this program.
+$ ls
+0: "1.Get Return Value, Basic/Basic"
+1: "2.Handling Failure, Basic/Basic"
+2: "3.Catch Exception And Show Message, Basic/Exception"
+3: "4.Catch Exception And Show Stacktrace, Basic/Exception"
+4: "5.Catch Exception And Show Custom Message, Basic/Exception"
+5: "6.Automatic Exception Catch, Basic/Exception"
+6: "7.Safety 'Get', Basic/Exception"
+7: "8.Change Culture, Basic/Culture"
+8: "9.Inspect Result Tree By Depth-First Search, Basic/Inspection"
+9: "10.Inspect Result Tree By Breadth-First Search, Basic/Inspection"
+10: "11.Get Subtree, Basic/Inspection"
+11: "12.Prune Subtree, Basic/Inspection"
+12: "13.Inspect Share Child Graph, Basic/Inspection"
+$ do all
+Sample: 1.Get Return Value, Basic/Basic
+  /*
+   * Description:
+   * Implementing logic such thet all functions always returing a result value and a message makes
+   * me feel better.
+   * However, if you're sure that the method never throws any exception and is always success,
+   * you can also simply return a primitive value.
+   */
+  
+  This 'Div' calculates {first arg} / {second arg} and then return 'Result' object.
+  
+    Result<decimal> result = Div(1, 2, indent);
+  
+  Calculating ( 1 / 2 )...
+  
+  After that, you can retrieve the value using 'Result.Whether' method which takes some callback arguments.
+  One is called when success, another is called when fail.
+  
+    result.Whether(
+    (val) =>
+    {
+        Utils.Write($"The result is {val}.");
+        return result; // You may delegate the result.
+    },
+    (failedReason) =>
+    {
+        Utils.WriteLine("Operation Failed!", indent);
+        Utils.WriteLine($"The reason is '{failedReason.Message}'", indent);
+        return result; // If you are not responsible for this failure, you may delegate the result as well.
+    }); 
+  
+  The result is 0.5.
+
+Sample: 2.Handling Failure, Basic/Basic
+  /*
+   * Description:
+   * Generally, it's hard to know why a method failed, because a method normally wants to return
+   * a value, not a message.
+   * Thanks to the method returning the 'Result' object, you can get the value when success, and can
+   * get the message when failure.
+   */
+  
+  This 'Div' has a checking logic whether the demoninator is 0. If so, it returns 'FailedResult' object.
+  
+    Result<decimal> result = Div(1, 0, indent);
+  
+  Calculating ( 1 / 0 )...
+  
+  In this case, the method failed, so you can get the message it set.
+  
+    if (result.IsFailed())
+    {
+        Utils.WriteLine("Operation Failed!", indent);
+        Utils.WriteLine($"The reason is '{result.GetReason().Message}'", indent);
+    }
+  
+  Operation Failed!
+  The reason is 'You can't divide by zero.'
+  
+  You can also use 'Result.Whether' method for handling a result. (See '1.Get Return Value' sample.)
+
+Sample: 3.Catch Exception And Show Message, Basic/Exception
+  /*
+   * Description:
+   * You can catch an exception and convert it into 'ExceptionResult' object.
+   */
+  
+  Give the statements you want to catch an exception to the 'Result.CatchAll' method parameter.
+  You can use 'Result.Catch<E>' generic methods as well.
+  
+    Result result = Result.CatchAll(() =>
+    {
+        Utils.WriteLine("", indent);
+        Utils.WriteLine($"Calculating(1 / 0)...", indent);
+    
+        // This causes throwing an exception.
+        decimal d = 0;
+        decimal tmp = 1 / d;
+    
+        return Result.MakeSuccessFirst();
+    }, useMessagePropertyAsMessage: true);
+  
+  Calculating ( 1 / 0 )...
+  
+  See the result.
+  
+    if (result.IsFailed())
+    {
+        Utils.WriteLine("Operation Failed!", indent);
+        Utils.WriteLine($"The reason is '{result.GetReason().Message}'", indent);
+    }
+  
+  Operation Failed!
+  The reason is 'Attempted to divide by zero.'
+
+Sample: 4.Catch Exception And Show Stacktrace, Basic/Exception
+  /*
+   * Description:
+   * Besides exception messages, you can show the stacktrace either.
+   */
+  
+  This time, we set 'useMessagePropertyAsMessage' to false.
+  
+    Result result = Result.CatchAll(() =>
+    {
+        Utils.WriteLine("", indent);
+        Utils.WriteLine($"Calculating(1 / 0)...", indent);
+    
+        // This causes throwing an exception.
+        decimal d = 0;
+        decimal tmp = 1 / d;
+    
+        return Result.MakeSuccessFirst();
+    }, useMessagePropertyAsMessage: false);
+  
+  Calculating ( 1 / 0 )...
+  
+  See the result.
+  
+    if (result.IsFailed())
+    {
+        Utils.WriteLine("Operation Failed!", indent);
+        Utils.WriteLine($"The reason is '{result.GetReason().Message}'", indent);
+    }
+  
+  Operation Failed!
+  The reason is 'System.DivideByZeroException: Attempted to divide by zero.
+     at System.Decimal.DecCalc.VarDecDiv(DecCalc& d1, DecCalc& d2)
+     at System.Decimal.op_Division(Decimal d1, Decimal d2)
+     at ReasonProject.Samples.Basic.SampleClass2_2.<>c__DisplayClass8_0.<Exec>b__0() in ReasonProject\ReasonProject\Samples\Basic\SampleClass2_2.cs:line 51
+     at Reason.Results.Result.Catch[E](Func`1 funcitonMaybeThrowException, Boolean useMessagePropertyAsMessage) in ReasonProject\Reason\Results\Result.cs:line 496'
+
+Sample: 5.Catch Exception And Show Custom Message, Basic/Exception
+  /*
+   * Description:
+   * If you want to customize the message of 'ExceptionResult', you can pass a function which takes
+   * one parameter as Exception to the 'Result.CatchAll's second parameter.
+   */
+  
+  This time, we pass a function which returns a message about an exception type.
+  
+    Result result = Result.CatchAll(() =>
+    {
+        Utils.WriteLine("", indent);
+        Utils.WriteLine($"Calculating(1 / 0)...", indent);
+    
+        // This causes throwing an exception.
+        decimal d = 0;
+        decimal tmp = 1 / d;
+    
+        return Result.MakeSuccessFirst();
+    }, (ex) =>
+    {
+        return $"This excaption type is { ex.GetType() }";
+    });
+  
+  Calculating ( 1 / 0 )...
+  
+  See the result.
+  
+    if (result.IsFailed())
+    {
+        Utils.WriteLine("Operation Failed!", indent);
+        Utils.WriteLine($"The reason is '{result.GetReason().Message}'", indent);
+    }
+  
+  Operation Failed!
+  The reason is 'This excaption type is System.DivideByZeroException'
+
+Sample: 6.Automatic Exception Catch, Basic/Exception
+  /*
+   * Description:
+   * The other method for sending an error message to their caller is throwing an exception.
+   * Aside from performance, it has some issues in my opinion.
+   * First, you must enclose your statement in brackets of try-catch. It easily happens you to forget
+   * to do that, and a compiler doesn't raise any compile error.
+   * Another pattern is that writing try-catch at the root of your program and handling all exceptions there.
+   * This is good most of the time. However, what if your program is constructing a viewmodel on a GUI application
+   * and throwing an exception during initialization time?
+   *   public void OnInitialize() {
+   *     // Get some data from anywhere. Suppose this method causes an exception and forgot to handle.
+   *     this.Data = GetSomething();
+   *   }
+   * Bacause there is a root logic to handle all exceptions, you may be willing to ignore dealing with this.
+   * After the exception, the state of the viewmodel is unknown. If your root logic didn't properly finish
+   * the page, your end-users may push a 'Submit' button and send the undefined state to your database.
+   * 
+   * My approach isn't a solution for forgetting something, but at least you're sure you don't throw any exception.
+   * You can catch an exception automatically while executing 'Result.Whether' method.
+   * That can be done by either specifying method parameters or setting global configurations.
+   */
+  
+  Set global configurations.
+  
+    Result.Configurations.AutomaticCatch = true;
+    Result.Configurations.UseMessagePropertyAsMessage = true;
+  
+  Create success result with a value of 0.
+  
+    Result<decimal> result = Result<decimal>.MakeSuccessFirst(0);
+  
+  Then call 'Result.Whether' method.
+  
+    result = result.Whether(
+    (val) =>
+    {
+        Utils.WriteLine($"Calculating ( 1 / {val} )...", indent);
+    
+        // This causes throwing an exception, but it'ok because
+        // 'Result.Whether' method automatically catches the exception
+        // and converts it into 'ExceptionResult', then returns it.
+        decimal tmp = 1 / val;
+    
+        return result.MakeSuccess(tmp);
+    },
+    (r) =>
+    {
+        Utils.WriteLine($"Failed reason is '"{r.Message}"'", indent);
+        return result;
+    });
+  
+  Calculating ( 1 / 0 )...
+  
+  See the result.
+  
+    if (result.IsFailed())
+    {
+        Utils.WriteLine("Operation Failed!", indent);
+        Utils.WriteLine($"The reason is '{result.GetReason().Message}'", indent);
+    }
+  
+  Operation Failed!
+  The reason is 'Attempted to divide by zero.'
+
+Sample: 7.Safety 'Get', Basic/Exception
+  /*
+   * Description:
+   * This library has a mechanism that forces programmers to check the result before getting values.
+   * Which is that throwing an exception if you try to get a value before calling a check method 'IsFailed'
+   * even if the result has a value at the moment. Therefore you can notice the potential issue that you
+   * forgot checking the result at a testing time.
+   * On another note, 'Result.Whether' method does check it implicitly, so you don't have to care
+   * the checking work if you set the global configuration 'AutomaticCatch' to true.
+   */
+  
+  This 'Div' returns a 'Result' object which has a value.
+  
+    Result<decimal> div = Div(1, 2, indent);
+  
+  Calculating ( 1 / 2 )...
+  
+  To call 'Get' before calling 'IsFailed' causes an exception.
+  
+    Result result = Result.CatchAll(() =>
+    {
+        decimal val = div.Get();
+        return Result.MakeSuccessFirst();
+    }, useMessagePropertyAsMessage: true);
+  
+  See the result.
+  
+    if (result.IsFailed())
+    {
+        Utils.WriteLine("Operation Failed!", indent);
+        Utils.WriteLine($"The reason is '{result.GetReason().Message}'", indent);
+    }
+  
+  Operation Failed!
+  The reason is 'You must check that the value is valid first by calling 'IsFailed' method.'
+  
+  Once you check the result, then you can get the value without an exception.
+  
+    if (!div.IsFailed())
+    {
+        Utils.WriteLine($"The value is '{div.Get()}'", indent);
+    }
+  
+  The value is 0.5
+
+Sample: 8.Change Culture, Basic/Culture
+  /*
+   * Description:
+   * Changing the language of the library built-in messages is done by setting your culture.
+   */
+  
+  The current culture is en-US.
+  
+  First, we do this with the current culture.
+  
+    Result<decimal> div = Div(1, 2, indent);
+    Result result = Result.CatchAll(() =>
+    {
+        // This causes throwing an exception that shows a built-in message of 'ReasonCustomException'.
+        decimal tmp = div.Get();
+        return Result.MakeSuccessFirst(tmp);
+    }, useMessagePropertyAsMessage: true);
+  
+  Calculating ( 1 / 2 )...
+  
+  See the result.
+  
+    if (result.IsFailed())
+    {
+        Utils.WriteLine("Operation Failed!", indent);
+        Utils.WriteLine($"The reason is '{result.GetReason().Message}'", indent);
+    }
+  
+  Operation Failed!
+  The reason is 'You must check that the value is valid first by calling 'IsFailed' method.'
+  
+  Now, let's change the culture.
+  
+  Please enter a culture name you want to try (e.g. us-EN, ja-JP): ja-JP
+  
+    CultureInfo cultureInfo = CultureInfo.CurrentCulture;
+    try
+    {
+        cultureInfo = new CultureInfo(cultureName, false);
+    }
+    catch(Exception)
+    {
+        Utils.WriteLine($"The culture wasn't found.", indent);
+    }
+    
+    Utils.WriteLine($"{cultureInfo.DisplayName} has been selected.", indent);
+  
+  日本語 (日本) has been selected.
+  
+  Pass the culture to a static method 'I18nContext.ChangeContext'.
+  
+    // Change the context
+    I18nContext.ChangeContext(cultureInfo);
+  
+  Then do the same thing again.
+  
+    div = Div(1, 2, indent);
+    result = Result.CatchAll(() =>
+    {
+        // This causes throwing an exception that shows a built-in message of 'ReasonCustomException'.
+        decimal tmp = div.Get();
+        return Result.MakeSuccessFirst(tmp);
+    }, useMessagePropertyAsMessage: true);
+  
+  Calculating ( 1 / 2 )...
+  
+  See the result.
+  
+    if (result.IsFailed())
+    {
+        Utils.WriteLine("Operation Failed!", indent);
+        Utils.WriteLine($"The reason is '{result.GetReason().Message}'", indent);
+    }
+  
+  Operation Failed!
+  The reason is 'IsFailedメソッドを呼び出して、先に値が有効であることを確認してください。'
+
+Sample: 9.Inspect Result Tree By Depth-First Search, Basic/Inspection
+  /*
+   * Description:
+   * The most difficult issue which has me tearing my hair is errors raised in deep.
+   * It abandon the reasons of errors occured in descendants' calls, and this is usually inevitable
+   * when you have chosen to not use try-catch.
+   * This library has the ability to let them hold all the results occured in descendants.
+   */
+  
+  This 'MakeNestedResult' method creates a sample result tree.
+  
+    protected Result MakeNestedResult()
+    {
+      /*
+       * [14]
+       *  |_______________
+       *  |               |
+       * [6]             [13]
+       *  |_______        |_______
+       *  |       |       |       |
+       * [2]     [5]     [9]     [12]
+       *  |___    |___    |___    |____
+       *  |   |   |   |   |   |   |    |
+       * [0] [1] [3] [4] [7] [8] [10] [11]
+       *
+       */
+      
+      Result result0 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={0}"));
+      Result result1 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={1}"));
+      Result result2 = Result.MakeAllSuccess(new List<Result> { result0, result1 }, new FailedReasonWithMessage($"Id={2}"));
+      
+      Result result3 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={3}"));
+      Result result4 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={4}"));
+      Result result5 = Result.MakeAllSuccess(new List<Result> { result3, result4 }, new FailedReasonWithMessage($"Id={5}"));
+      
+      Result result6 = Result.MakeAllSuccess(new List<Result> { result2, result5 }, new FailedReasonWithMessage($"Id={6}"));
+      
+      Result result7 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={7}"));
+      Result result8 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={8}"));
+      Result result9 = Result.MakeAllSuccess(new List<Result> { result7, result8 }, new FailedReasonWithMessage($"Id={9}"));
+      
+      Result result10 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={10}"));
+      Result result11 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={11}"));
+      Result result12 = Result.MakeAllSuccess(new List<Result> { result10, result11 }, new FailedReasonWithMessage($"Id={12}"));
+      
+      Result result13 = Result.MakeAllSuccess(new List<Result> { result9, result12 }, new FailedReasonWithMessage($"Id={13}"));
+      
+      Result result14 = Result.MakeAllSuccess(new List<Result> { result6, result13 }, new FailedReasonWithMessage($"Id={14}"));
+      
+      return result14;
+    }
+  
+  Now, make the tree.
+  
+    Result result = MakeNestedResult();
+  
+  You can inspect the tree by depth-first search with 'ResultInspector.InspectAll'.
+  
+    int callCount = 0;
+    ResultInspector.InspectAll(result,
+        (result, depth, index, parent) =>
+        {
+            Utils.WriteLine($"{callCount++}:{result}, depth={depth}, index={index}, parent={parent}", indent);
+        },
+        depthFirstSearch: true);
+  
+  0:Id=14, depth=0, index=-1, parent=
+  1:Id=6, depth=1, index=0, parent=Id=14
+  2:Id=2, depth=2, index=0, parent=Id=6
+  3:Id=0, depth=3, index=0, parent=Id=2
+  4:Id=1, depth=3, index=1, parent=Id=2
+  5:Id=5, depth=2, index=1, parent=Id=6
+  6:Id=3, depth=3, index=0, parent=Id=5
+  7:Id=4, depth=3, index=1, parent=Id=5
+  8:Id=13, depth=1, index=1, parent=Id=14
+  9:Id=9, depth=2, index=0, parent=Id=13
+  10:Id=7, depth=3, index=0, parent=Id=9
+  11:Id=8, depth=3, index=1, parent=Id=9
+  12:Id=12, depth=2, index=1, parent=Id=13
+  13:Id=10, depth=3, index=0, parent=Id=12
+  14:Id=11, depth=3, index=1, parent=Id=12
+  
+  I show the tree for a reference.
+  [14]
+   |_______________
+   |               |
+  [6]             [13]
+   |_______        |_______
+   |       |       |       |
+  [2]     [5]     [9]     [12]
+   |___    |___    |___    |____
+   |   |   |   |   |   |   |    |
+  [0] [1] [3] [4] [7] [8] [10] [11]
+
+Sample: 10.Inspect Result Tree By Breadth-First Search, Basic/Inspection
+  /*
+   * Description:
+   * Similar to '10.Inspect Result Tree By Depth-First Search', you can also search a tree
+   * by breadth-first search.
+   */
+  
+  Make a sample tree.
+  
+    Result result = MakeNestedResult();
+  
+  You can inspect the tree by beadth-first search by passing false for the 'depthFirstSearch' parameter.
+  
+    int callCount = 0;
+    ResultInspector.InspectAll(result,
+        (result, depth, index, parent) =>
+        {
+            Utils.WriteLine($"{callCount++}:{result}, depth={depth}, index={index}, parent={parent}", indent);
+        },
+        depthFirstSearch: false);
+  
+  0:Id=14, depth=0, index=-1, parent=
+  1:Id=6, depth=1, index=0, parent=Id=14
+  2:Id=13, depth=1, index=1, parent=Id=14
+  3:Id=2, depth=2, index=0, parent=Id=6
+  4:Id=5, depth=2, index=1, parent=Id=6
+  5:Id=9, depth=2, index=0, parent=Id=13
+  6:Id=12, depth=2, index=1, parent=Id=13
+  7:Id=0, depth=3, index=0, parent=Id=2
+  8:Id=1, depth=3, index=1, parent=Id=2
+  9:Id=3, depth=3, index=0, parent=Id=5
+  10:Id=4, depth=3, index=1, parent=Id=5
+  11:Id=7, depth=3, index=0, parent=Id=9
+  12:Id=8, depth=3, index=1, parent=Id=9
+  13:Id=10, depth=3, index=0, parent=Id=12
+  14:Id=11, depth=3, index=1, parent=Id=12
+  
+  I show the tree for a reference.
+  [14]
+   |_______________
+   |               |
+  [6]             [13]
+   |_______        |_______
+   |       |       |       |
+  [2]     [5]     [9]     [12]
+   |___    |___    |___    |____
+   |   |   |   |   |   |   |    |
+  [0] [1] [3] [4] [7] [8] [10] [11]
+
+Sample: 11.Get Subtree, Basic/Inspection
+  /*
+   * Description:
+   * Getting subtrees is easy because the result has their next results.
+   */
+  
+  Make a sample tree.
+  
+    Result result = MakeNestedResult();
+  
+  Get the second subtree.
+  
+    result = result.NextResults.ElementAt(1);
+  
+  Inspect the subtree.
+  
+    int callCount = 0;
+    ResultInspector.InspectAll(result,
+        (result, depth, index, parent) =>
+        {
+            Utils.WriteLine($"{callCount++}:{result}, depth={depth}, index={index}, parent={parent}", indent);
+        },
+        depthFirstSearch: true);
+  
+  0:Id=13, depth=0, index=-1, parent=
+  1:Id=9, depth=1, index=0, parent=Id=13
+  2:Id=7, depth=2, index=0, parent=Id=9
+  3:Id=8, depth=2, index=1, parent=Id=9
+  4:Id=12, depth=1, index=1, parent=Id=13
+  5:Id=10, depth=2, index=0, parent=Id=12
+  6:Id=11, depth=2, index=1, parent=Id=12
+  
+  I show the tree for a reference.
+  [14]
+   |_______________
+   |               |
+  [6]             [13] <= here we have got by 'result = result.NextResults.ElementAt(1);'.
+   |_______        |_______
+   |       |       |       |
+  [2]     [5]     [9]     [12]
+   |___    |___    |___    |____
+   |   |   |   |   |   |   |    |
+  [0] [1] [3] [4] [7] [8] [10] [11]
+
+Sample: 12.Prune Subtree, Basic/Inspection
+  /*
+   * Description:
+   * The result trees are immutable. Thus you can't remove a subtree from them.
+   * However, you can tell the 'ResultInspector' that which subtree you don't want to inspect.
+   */
+  
+  Make a sample tree.
+  
+    Result result = MakeNestedResult();
+  
+  Inspect the tree with specifying so that the second subtree is pruned while the inspection.
+  
+    int callCount = 0;
+    ResultInspector.InspectWhere(result,
+        (result, depth, index, parent) =>
+        {
+            Utils.WriteLine($"{callCount++}:{result}, depth={depth}, index={index}, parent={parent}", indent);
+        },
+        (result, depth, index, parent) => true,
+        (result, depth, index, parent) => (depth == 1 && index == 1), // This line is the one that specify the condition of pruning.
+        depthFirstSearch: true);
+  
+  0:Id=14, depth=0, index=-1, parent=
+  1:Id=6, depth=1, index=0, parent=Id=14
+  2:Id=2, depth=2, index=0, parent=Id=6
+  3:Id=0, depth=3, index=0, parent=Id=2
+  4:Id=1, depth=3, index=1, parent=Id=2
+  5:Id=5, depth=2, index=1, parent=Id=6
+  6:Id=3, depth=3, index=0, parent=Id=5
+  7:Id=4, depth=3, index=1, parent=Id=5
+  
+  I show the tree for a reference.
+  [14]
+   |_______________
+   |               |
+  [6]             [13] <= all the node under here has been pruned.
+   |_______        |_______
+   |       |       |       |
+  [2]     [5]     [9]     [12]
+   |___    |___    |___    |____
+   |   |   |   |   |   |   |    |
+  [0] [1] [3] [4] [7] [8] [10] [11]
+
+Sample: 13.Inspect Share Child Graph, Basic/Inspection
+  /*
+   * Description:
+   * Think of the situation that a result is needed by an other result for their success condition
+   * and is also needed by another result. This creates a graph which is sharing one child.
+   * This library can properly handle the case, but it's a little bit tricky when using depth-first search.
+   */
+  
+  This 'MakeNestedResultShare' method creates a sample result tree which is sharing a child.
+  
+    protected Result MakeNestedResultShare()
+    {
+      /*
+      * [4]
+      *  |___ ___
+      *  |   |   |
+      *  |  [3] [2]
+      *  |       |___
+      *  |_______|   |
+      *  |           |
+      * [0]         [1]
+      *
+      */
+      
+      Result result0 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={0}"));
+      Result result1 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={1}"));
+      Result result2 = Result.MakeAllSuccess(new List<Result> { result0, result1 }, new FailedReasonWithMessage($"Id={2}"));
+      
+      Result result3 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={3}"));
+      Result result4 = Result.MakeAllSuccess(new List<Result> { result0, result3, result2 }, new FailedReasonWithMessage($"Id={4}"));
+      
+      return result4;
+    }
+  
+  Now, make the tree.
+  
+    Result result = MakeNestedResultShare();
+  
+  You can inspect the tree by depth-first search, but the shared child is inspected twice.
+  
+    int callCount = 0;
+    ResultInspector.InspectAll(result,
+        (result, depth, index, parent) =>
+        {
+            Utils.WriteLine($"{callCount++}:{result}, depth={depth}, index={index}, parent={parent}", indent);
+        },
+        depthFirstSearch: true);
+  
+  0:Id=4, depth=0, index=-1, parent=
+  1:Id=0, depth=1, index=0, parent=Id=4
+  2:Id=3, depth=1, index=1, parent=Id=4
+  3:Id=2, depth=1, index=2, parent=Id=4
+  4:Id=0, depth=2, index=0, parent=Id=2
+  5:Id=1, depth=2, index=1, parent=Id=2
+  
+  I show the tree for a reference.
+  [4]
+   |___ ___
+   |   |   |
+   |  [3] [2]
+   |       |___
+   |_______|   |
+   |           |
+  [0]         [1]
+     <= this result has two paths from the parents, so this is called twice.
+$ q
+Bye.
