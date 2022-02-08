@@ -42,6 +42,7 @@ if(cmdArgs.Length > 2)
 
     try
     {
+        if(force && !append) File.Delete(cmdArgs[2]);
         Utils.TextWriter = new StreamWriter(new FileStream(cmdArgs[2], force ? ( append ? FileMode.Append : FileMode.OpenOrCreate) : FileMode.CreateNew, FileAccess.Write, FileShare.Read));
     }
     catch(Exception ex)
@@ -145,6 +146,7 @@ void ListSamples(IEnumerable<Tuple<int, ISample>> samples, string command)
 {
     string parsedCommand = command.Substring(2).TrimStart();
 
+    Utils.WriteLine("");
     foreach (var s in samples)
     {
         if (!string.IsNullOrWhiteSpace(parsedCommand))

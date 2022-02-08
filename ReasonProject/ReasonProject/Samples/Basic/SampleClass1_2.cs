@@ -20,9 +20,6 @@ namespace ReasonProject.Samples.Basic
 
         public string[] Description => new string[]
         {
-                "Handling a failed result is not complex, bacause the reason of the failure has already been set",
-                "by the method you called.",
-                "For example, calculating ( 1 / 0 ) causes an exception.",
                 "Generally, it's hard to know why a method failed, because a method normally wants to return",
                 "a value, not a message.",
                 "Thanks to the method returning the 'Result' object, you can get the value when success, and can",
