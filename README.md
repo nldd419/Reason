@@ -5,7 +5,6 @@ C# library for handling errors
 This library is an experiment for neat error handlings without exceptions.
 
 ## What is this libary and how to use?
----
 This project has samples to execute, so I just paste some of the outputs.
 ```
 Sample: 1.Get Return Value, Basic/Basic
@@ -208,7 +207,7 @@ Sample: 9.Inspect Result Tree By Depth-First Search, Basic/Inspection
 You can see full samples [here](docs/output_samples.txt) or by running the sample project.
 
 ## Contributions
----
+
 ### How to add samples
 Inherit `ISample`, name the class 'SampleXXX', and put it under 'Samples/Basic' folder. If the category of the sample is not 'Basic', you should create a new folder under the 'Samples' folder and put the sample in it.
 ```
