@@ -14,8 +14,10 @@ namespace Reason.Results
     /// </summary>
     public class ExceptionResult<E> : FailedResult where E : Exception
     {
-        public ExceptionResult(FailedReasonException<E> reason) : base(reason, new List<Result>()) { }
-        public ExceptionResult(FailedReasonException<E> reason, IEnumerable<Result> nextResults) : base(reason, nextResults) { }
+        public ExceptionResult(FailedReasonException<E> reason) : base(reason, new List<Result>()) { this.ExceptionReason = reason; }
+        public ExceptionResult(FailedReasonException<E> reason, IEnumerable<Result> nextResults) : base(reason, nextResults) { this.ExceptionReason = reason; }
+
+        public readonly FailedReasonException<E> ExceptionReason;
     }
 
 }

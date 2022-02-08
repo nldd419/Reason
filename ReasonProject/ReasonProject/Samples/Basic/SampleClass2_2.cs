@@ -14,25 +14,60 @@ namespace ReasonProject.Samples.Basic
     {
         public override string CategoryName => "Exception";
 
-        public string Title => "Division Throwing Exception And Show Stacktrace";
+        public string Title => "4.Catch Exception And Show Stacktrace";
+
+        public string[] Description => new string[]
+        {
+            "Besides exception messages, you can show the stacktrace either.",
+        };
 
         public void Exec(int indent)
         {
-            Result ret;
+            Utils.WriteLine("This time, we set 'useMessagePropertyAsMessage' to false.", indent);
 
-            Utils.WriteLine("You can show the stack trace.", indent);
-            Utils.WriteLine("Calculating ( 1 / 2 )...", indent);
+            Utils.WriteLine("", indent);
+            Utils.WriteLineForCode(indent,
+                "Result result = Result.CatchAll(() =>",
+                "{",
+                "    Utils.WriteLine(\"\", indent);",
+                "    Utils.WriteLine($\"Calculating(1 / 0)...\", indent);",
+                "",
+                "    // This causes throwing an exception.",
+                "    decimal d = 0;",
+                "    decimal tmp = 1 / d;",
+                "",
+                "    return Result.MakeSuccessFirst();",
+                "}, useMessagePropertyAsMessage: false);");
 
-            ret = Result.CatchAll(() =>
+            Result result = Result.CatchAll(() =>
             {
-                double tmp = DivThrowingException(1d, 2d);
-                return Result<double>.MakeSuccessFirst(tmp);
+                Utils.WriteLine("", indent);
+                Utils.WriteLine($"Calculating ( 1 / 0 )...", indent);
+
+                // This causes throwing an exception.
+                decimal d = 0;
+                decimal tmp = 1 / d;
+
+                return Result.MakeSuccessFirst();
             }, useMessagePropertyAsMessage: false);
 
-            Utils.WriteLine(ret.GetReason().Message, indent);
+            Utils.WriteLine("", indent);
+            Utils.WriteLine("See the result.", indent);
 
-            if (ret.IsFailed()) Utils.WriteLine("Operation Failed!", indent);
-            else Utils.WriteLine("Operation Succeeded!", indent);
+            Utils.WriteLine("", indent);
+            Utils.WriteLineForCode(indent,
+                "if (result.IsFailed())",
+                "{",
+                "    Utils.WriteLine(\"Operation Failed!\", indent);",
+                "    Utils.WriteLine($\"The reason is '{result.GetReason().Message}'\", indent);",
+                "}");
+
+            Utils.WriteLine("", indent);
+            if (result.IsFailed())
+            {
+                Utils.WriteLine("Operation Failed!", indent);
+                Utils.WriteLine($"The reason is '{result.GetReason().Message}'", indent);
+            }
         }
     }
 }

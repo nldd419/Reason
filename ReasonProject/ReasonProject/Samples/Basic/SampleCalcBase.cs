@@ -16,33 +16,21 @@ namespace ReasonProject.Samples.Basic
         public virtual string CategoryName => "";
         public string Category => CategoryBase + CategoryName;
 
-        protected Result Div(double numerator, double denominator, int indent)
+        protected Result<decimal> Div(decimal numerator, decimal denominator, int indent)
         {
             Calculator calc = new Calculator();
 
-            Result<double> result = calc.Divide(numerator, denominator);
+            Utils.WriteLine($"Calculating ( {numerator} / {denominator} )...", indent);
 
-            Result ret = result.Whether((v) =>
-            {
-                Utils.WriteLine($"Result is {v}", indent);
-                return Result.MakeSuccessFirst();
-            },
-            (r) =>
-            {
-                Utils.WriteLine($"Failed reason is \"{r.Message}\"", indent);
-                return result;
-            });
-
-            return ret;
+            return calc.Divide(numerator, denominator);
         }
 
-        protected double DivThrowingException(double numerator, double denominator)
+        protected decimal DivThrowingException(decimal numerator, decimal denominator)
         {
             Calculator calc = new Calculator();
 
-            Result<double> result = calc.Divide(numerator, denominator);
+            Result<decimal> result = calc.Divide(numerator, denominator);
 
-            // To call 'Get' before calling 'IsFailed' causes a exception.
             return result.Get();
         }
 
@@ -59,7 +47,7 @@ namespace ReasonProject.Samples.Basic
              *  |___    |___    |___    |____
              *  |   |   |   |   |   |   |    |
              * [0] [1] [3] [4] [7] [8] [10] [11]
-             *  
+             *
              */
 
             Result result0 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={0}"));
@@ -98,7 +86,7 @@ namespace ReasonProject.Samples.Basic
              *  |_______|   |
              *  |           |
              * [0]         [1]
-             *  
+             *
              */
 
             Result result0 = Result.MakeFailedFirst(new FailedReasonWithMessage($"Id={0}"));

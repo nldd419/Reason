@@ -16,25 +16,62 @@ namespace ReasonProject.Samples.Basic
     {
         public override string CategoryName => "Inspection";
 
-        public string Title => "Prune Subtree";
+        public string Title => "13.Prune Subtree";
+
+        public string[] Description => new string[]
+        {
+            "The result trees are immutable. Thus you can't remove a subtree from them.",
+            "However, you can tell the 'ResultInspector' that which subtree you don't want to inspect.",
+        };
 
         public void Exec(int indent)
         {
-            Result ret;
+            Utils.WriteLine("Make a sample tree.", indent);
 
-            Utils.WriteLine("Creating an ordinary tree...", indent);
+            Utils.WriteLine("", indent);
+            Utils.WriteLineForCode("Result result = MakeNestedResult();", indent);
 
-            ret = MakeNestedResult();
+            Result result = MakeNestedResult();
 
-            Utils.WriteLine("Inspect the tree by depth-first search. The second subtree is pruned while the inspection.", indent);
+            Utils.WriteLine("", indent);
+            Utils.WriteLine("Inspect the tree with specifying so that the second subtree is pruned while the inspection.", indent);
 
-            indent += 2;
+            Utils.WriteLine("", indent);
+            Utils.WriteLineForCode(indent,
+                "int callCount = 0;",
+                "ResultInspector.InspectWhere(result,",
+                "    (result, depth, index, parent) =>",
+                "    {",
+                "        Utils.WriteLine($\"{callCount++}:{result}, depth={depth}, index={index}, parent={parent}\", indent);",
+                "    },",
+                "    (result, depth, index, parent) => true,",
+                "    (result, depth, index, parent) => (depth == 1 && index == 1), // This line is the one that specify the condition of pruning.",
+                "    depthFirstSearch: true);");
 
+            Utils.WriteLine("", indent);
             int callCount = 0;
-            ResultInspector.InspectWhere(ret, (result, depth, index, parent) => { Utils.WriteLine($"{callCount++}:{result}, depth={depth}, index={index}, parent={parent}", indent); },
+            ResultInspector.InspectWhere(result,
+                (result, depth, index, parent) =>
+                {
+                    Utils.WriteLine($"{callCount++}:{result}, depth={depth}, index={index}, parent={parent}", indent);
+                },
                 (result, depth, index, parent) => true,
-                (result, depth, index, parent) => (depth == 1 && index == 1),
+                (result, depth, index, parent) => (depth == 1 && index == 1), // This line is the one that specify the condition of pruning.
                 depthFirstSearch: true);
+
+            Utils.WriteLine("", indent);
+            Utils.WriteLine("I show the tree for a reference.", indent);
+            Utils.WriteLine(indent,
+                "[14]",
+                " |_______________",
+                " |               |",
+                "[6]             [13] <= all the node under here has been pruned.",
+                " |_______        |_______",
+                " |       |       |       |",
+                "[2]     [5]     [9]     [12]",
+                " |___    |___    |___    |____",
+                " |   |   |   |   |   |   |    |",
+                "[0] [1] [3] [4] [7] [8] [10] [11]");
         }
     }
 }

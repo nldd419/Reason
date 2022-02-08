@@ -10,11 +10,11 @@ namespace ReasonProject.Samples.Basic
 {
     internal class Calculator
     {
-        public Result<double> Divide(double numerator, double denominator)
+        public Result<decimal> Divide(decimal numerator, decimal denominator)
         {
-            if (denominator == 0) return Result<double>.MakeFailedFirst(new FailedReasonDividedByZero());
+            if (denominator == 0) return Result<decimal>.MakeFailedFirst(new FailedReasonDividedByZero());
 
-            return Result<double>.MakeSuccessFirst(numerator / denominator);
+            return Result<decimal>.MakeSuccessFirst(numerator / denominator);
         }
     }
 }

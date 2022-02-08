@@ -16,27 +16,65 @@ namespace ReasonProject.Samples.Basic
     {
         public override string CategoryName => "Inspection";
 
-        public string Title => "Get Subtree";
+        public string Title => "12.Get Subtree";
+
+        public string[] Description => new string[]
+        {
+            "Getting subtrees is easy because the result has their next results.",
+        };
 
         public void Exec(int indent)
         {
-            Result ret;
+            Utils.WriteLine("Make a sample tree.", indent);
 
-            Utils.WriteLine("Creating an ordinary tree...", indent);
+            Utils.WriteLine("", indent);
+            Utils.WriteLineForCode("Result result = MakeNestedResult();", indent);
 
-            ret = MakeNestedResult();
+            Result result = MakeNestedResult();
 
+            Utils.WriteLine("", indent);
             Utils.WriteLine("Get the second subtree.", indent);
 
-            ret = ret.NextResults.ElementAt(1);
+            Utils.WriteLine("", indent);
+            Utils.WriteLineForCode("result = result.NextResults.ElementAt(1);", indent);
 
-            Utils.WriteLine("Inspect the subtree by depth-first search.", indent);
+            result = result.NextResults.ElementAt(1);
 
-            indent += 2;
+            Utils.WriteLine("", indent);
+            Utils.WriteLine("Inspect the subtree.", indent);
 
+            Utils.WriteLine("", indent);
+            Utils.WriteLineForCode(indent,
+                "int callCount = 0;",
+                "ResultInspector.InspectAll(result,",
+                "    (result, depth, index, parent) =>",
+                "    {",
+                "        Utils.WriteLine($\"{callCount++}:{result}, depth={depth}, index={index}, parent={parent}\", indent);",
+                "    },",
+                "    depthFirstSearch: true);");
+
+            Utils.WriteLine("", indent);
             int callCount = 0;
-            ResultInspector.InspectAll(ret, (result, depth, index, parent) => { Utils.WriteLine($"{callCount++}:{result}, depth={depth}, index={index}, parent={parent}", indent); },
+            ResultInspector.InspectAll(result,
+                (result, depth, index, parent) =>
+                {
+                    Utils.WriteLine($"{callCount++}:{result}, depth={depth}, index={index}, parent={parent}", indent);
+                },
                 depthFirstSearch: true);
+
+            Utils.WriteLine("", indent);
+            Utils.WriteLine("I show the tree for a reference.", indent);
+            Utils.WriteLine(indent,
+                "[14]",
+                " |_______________",
+                " |               |",
+                "[6]             [13] <= here we have got by 'result = result.NextResults.ElementAt(1);'.",
+                " |_______        |_______",
+                " |       |       |       |",
+                "[2]     [5]     [9]     [12]",
+                " |___    |___    |___    |____",
+                " |   |   |   |   |   |   |    |",
+                "[0] [1] [3] [4] [7] [8] [10] [11]");
         }
     }
 }

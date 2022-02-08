@@ -59,8 +59,7 @@ namespace Reason.Results
         /// <param name="failAction">An action excecuted when the result has failed.</param>
         public Result Whether(Func<T, Result> successAction, Func<ReasonBase, Result> failAction)
         {
-            if (IsFailed()) return failAction(GetReason());
-            else return successAction(Get());
+            return Whether(successAction, failAction, Configurations.AutomaticCatch, Configurations.UseMessagePropertyAsMessage, Configurations.CreateMessageFunc);
         }
 
         /// <summary>
@@ -68,10 +67,77 @@ namespace Reason.Results
         /// </summary>
         /// <param name="successAction">An action excecuted when the result has succeeded.</param>
         /// <param name="failAction">An action excecuted when the result has failed.</param>
-        public U Whether<U>(Func<T, U> successAction, Func<ReasonBase, U> failAction) where U : Result
+        public Result Whether(Func<T, Result> successAction, Func<ReasonBase, Result> failAction,
+            bool automaticCatch, bool useMessagePropertyAsMessage, FailedReasonException<Exception>.CustomExceptionMessageFunc? createMessageFunc = null)
         {
-            if (IsFailed()) return failAction(GetReason());
-            else return successAction(Get());
+            if (automaticCatch)
+            {
+                if (createMessageFunc == null)
+                {
+                    return CatchAll(() =>
+                    {
+                        if (IsFailed()) return failAction(GetReason());
+                        else return successAction(Get());
+                    }, useMessagePropertyAsMessage: useMessagePropertyAsMessage);
+                }
+                else
+                {
+                    return CatchAll(() =>
+                    {
+                        if (IsFailed()) return failAction(GetReason());
+                        else return successAction(Get());
+                    }, createMessageFunc: createMessageFunc);
+                }
+            }
+            else
+            {
+                if (IsFailed()) return failAction(GetReason());
+                else return successAction(Get());
+            }
+        }
+
+        /// <summary>
+        /// Branch off to actions, one is for success, another is for failure.
+        /// </summary>
+        /// <param name="successAction">An action excecuted when the result has succeeded.</param>
+        /// <param name="failAction">An action excecuted when the result has failed.</param>
+        public Result<R> Whether<R>(Func<T, Result<R>> successAction, Func<ReasonBase, Result<R>> failAction)
+        {
+            return Whether(successAction, failAction, Configurations.AutomaticCatch, Configurations.UseMessagePropertyAsMessage, Configurations.CreateMessageFunc);
+        }
+
+        /// <summary>
+        /// Branch off to actions, one is for success, another is for failure.
+        /// </summary>
+        /// <param name="successAction">An action excecuted when the result has succeeded.</param>
+        /// <param name="failAction">An action excecuted when the result has failed.</param>
+        public Result<R> Whether<R>(Func<T, Result<R>> successAction, Func<ReasonBase, Result<R>> failAction,
+            bool automaticCatch, bool useMessagePropertyAsMessage, FailedReasonException<Exception>.CustomExceptionMessageFunc? createMessageFunc = null)
+        {
+            if (automaticCatch)
+            {
+                if (createMessageFunc == null)
+                {
+                    return CatchAll<R>(() =>
+                    {
+                        if (IsFailed()) return failAction(GetReason());
+                        else return successAction(Get());
+                    }, useMessagePropertyAsMessage: useMessagePropertyAsMessage);
+                }
+                else
+                {
+                    return CatchAll<R>(() =>
+                    {
+                        if (IsFailed()) return failAction(GetReason());
+                        else return successAction(Get());
+                    }, createMessageFunc: createMessageFunc);
+                }
+            }
+            else
+            {
+                if (IsFailed()) return failAction(GetReason());
+                else return successAction(Get());
+            }
         }
 
         /// <summary>
@@ -81,7 +147,7 @@ namespace Reason.Results
         /// <param name="v">A value of the result depends on user's context.</param>
         public static SuccessResult<T> MakeSuccessFirst(T v)
         {
-            return new SuccessResult<T>(v, new List<Result<T>>());
+            return Result.MakeSuccessFirst<T>(v);
         }
 
         /// <summary>
@@ -91,7 +157,7 @@ namespace Reason.Results
         /// <param name="reason">The reason of the failure.</param>
         public static new FailedResult<T> MakeFailedFirst(FailedReason reason)
         {
-            return new FailedResult<T>(reason, new List<Result<T>>());
+            return Result.MakeFailedFirst<T>(reason);
         }
     }
 }

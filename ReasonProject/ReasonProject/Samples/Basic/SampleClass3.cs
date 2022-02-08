@@ -16,34 +16,84 @@ namespace ReasonProject.Samples.Basic
     {
         public override string CategoryName => "Culture";
 
-        public string Title => "Change Culture";
+        public string Title => "9.Change Culture";
+
+        public string[] Description => new string[]
+        {
+            "Changing the language of the library built-in messages is done by setting your culture.",
+        };
 
         public void Exec(int indent)
         {
-            Result ret;
-
+            // Save a current culture.
             CultureInfo defaultCulture = I18nContext.Current.Culture;
 
-            Utils.WriteLine($"The current culture is {defaultCulture.DisplayName}", indent);
+
+            Utils.WriteLine($"The current culture is {defaultCulture.DisplayName}.", indent);
 
             Utils.WriteLine("", indent);
-            Utils.WriteLine("Calculating ( 1 / 2 )...", indent);
+            Utils.WriteLine("First, we do this with the current culture.", indent);
 
-            ret = Result.CatchAll(() =>
+            Utils.WriteLine("", indent);
+            Utils.WriteLineForCode(indent,
+                "Result<decimal> div = Div(1, 2, indent);",
+                "Result result = Result.CatchAll(() =>",
+                "{",
+                "    // This causes throwing an exception that shows a built-in message of 'ReasonCustomException'.",
+                "    decimal tmp = div.Get();",
+                "    return Result.MakeSuccessFirst(tmp);",
+                "}, useMessagePropertyAsMessage: true);");
+
+            Utils.WriteLine("", indent);
+            Result<decimal> div = Div(1, 2, indent);
+            Result result = Result.CatchAll(() =>
             {
-                double tmp = DivThrowingException(1d, 2d);
-                return Result<double>.MakeSuccessFirst(tmp);
+                // This causes throwing an exception that shows a built-in message of 'ReasonCustomException'.
+                decimal tmp = div.Get();
+                return Result.MakeSuccessFirst(tmp);
             }, useMessagePropertyAsMessage: true);
 
-            Utils.WriteLine(ret.GetReason().Message, indent);
+            Utils.WriteLine("", indent);
+            Utils.WriteLine("See the result.", indent);
 
-            if (ret.IsFailed()) Utils.WriteLine("Operation Failed!", indent);
-            else Utils.WriteLine("Operation Succeeded!", indent);
+            Utils.WriteLine("", indent);
+            Utils.WriteLineForCode(indent,
+                "if (result.IsFailed())",
+                "{",
+                "    Utils.WriteLine(\"Operation Failed!\", indent);",
+                "    Utils.WriteLine($\"The reason is '{result.GetReason().Message}'\", indent);",
+                "}");
+
+            Utils.WriteLine("", indent);
+            if (result.IsFailed())
+            {
+                Utils.WriteLine("Operation Failed!", indent);
+                Utils.WriteLine($"The reason is '{result.GetReason().Message}'", indent);
+            }
+
+
+            Utils.WriteLine("", indent);
+            Utils.WriteLine("Now, let's change the culture.", indent);
 
             Utils.WriteLine("", indent);
             Utils.Write("Please enter a culture name you want to try (e.g. us-EN, ja-JP): ", indent);
             string? cultureName = Console.ReadLine() ?? "";
 
+            Utils.WriteLine("", indent);
+            Utils.WriteLineForCode(indent,
+                "CultureInfo cultureInfo = CultureInfo.CurrentCulture;",
+                "try",
+                "{",
+                "    cultureInfo = new CultureInfo(cultureName, false);",
+                "}",
+                "catch(Exception)",
+                "{",
+                "    Utils.WriteLine($\"The culture wasn't found.\", indent);",
+                "}",
+                "",
+                "Utils.WriteLine($\"{cultureInfo.DisplayName} has been selected.\", indent);");
+
+            Utils.WriteLine("", indent);
             CultureInfo cultureInfo = CultureInfo.CurrentCulture;
             try
             {
@@ -54,24 +104,59 @@ namespace ReasonProject.Samples.Basic
                 Utils.WriteLine($"The culture wasn't found.", indent);
             }
 
-            Utils.WriteLine($"{cultureInfo.DisplayName} is selected.", indent);
+            Utils.WriteLine($"{cultureInfo.DisplayName} has been selected.", indent);
+
+            Utils.WriteLine("", indent);
+            Utils.WriteLine("Pass the culture to a static method 'I18nContext.ChangeContext'.", indent);
+
+            Utils.WriteLine("", indent);
+            Utils.WriteLineForCode(indent,
+                "// Change the context",
+                "I18nContext.ChangeContext(cultureInfo);");
 
             // Change the context
             I18nContext.ChangeContext(cultureInfo);
 
             Utils.WriteLine("", indent);
-            Utils.WriteLine("Calculating ( 1 / 2 )...", indent);
+            Utils.WriteLine("Then do the same thing again.", indent);
 
-            ret = Result.CatchAll(() =>
+            Utils.WriteLine("", indent);
+            Utils.WriteLineForCode(indent,
+                "div = Div(1, 2, indent);",
+                "result = Result.CatchAll(() =>",
+                "{",
+                "    // This causes throwing an exception that shows a built-in message of 'ReasonCustomException'.",
+                "    decimal tmp = div.Get();",
+                "    return Result.MakeSuccessFirst(tmp);",
+                "}, useMessagePropertyAsMessage: true);");
+
+            Utils.WriteLine("", indent);
+            div = Div(1, 2, indent);
+            result = Result.CatchAll(() =>
             {
-                double tmp = DivThrowingException(1d, 2d);
-                return Result<double>.MakeSuccessFirst(tmp);
+                // This causes throwing an exception that shows a built-in message of 'ReasonCustomException'.
+                decimal tmp = div.Get();
+                return Result.MakeSuccessFirst(tmp);
             }, useMessagePropertyAsMessage: true);
 
-            Utils.WriteLine(ret.GetReason().Message, indent);
+            Utils.WriteLine("", indent);
+            Utils.WriteLine("See the result.", indent);
 
-            if (ret.IsFailed()) Utils.WriteLine("Operation Failed!", indent);
-            else Utils.WriteLine("Operation Succeeded!", indent);
+            Utils.WriteLine("", indent);
+            Utils.WriteLineForCode(indent,
+                "if (result.IsFailed())",
+                "{",
+                "    Utils.WriteLine(\"Operation Failed!\", indent);",
+                "    Utils.WriteLine($\"The reason is '{result.GetReason().Message}'\", indent);",
+                "}");
+
+            Utils.WriteLine("", indent);
+            if (result.IsFailed())
+            {
+                Utils.WriteLine("Operation Failed!", indent);
+                Utils.WriteLine($"The reason is '{result.GetReason().Message}'", indent);
+            }
+
 
             // Restore the context
             I18nContext.ChangeContext(defaultCulture);

@@ -10,6 +10,38 @@ using Reason.Reasons;
 
 // This program introduce some usages of the library.
 
+string[] cmdArgs = Environment.GetCommandLineArgs();
+if(cmdArgs.Length > 2)
+{
+    if(cmdArgs[1] != "-o")
+    {
+        Console.WriteLine("You should pass '-o' for the second argument.");
+        Environment.Exit(1);
+    }
+
+    if (string.IsNullOrWhiteSpace(cmdArgs[2]))
+    {
+        Console.WriteLine("You can't omit the output file path.");
+        Environment.Exit(1);
+    }
+
+    bool force = false;
+    if (cmdArgs.Length > 3 && cmdArgs[3] == "-f")
+    {
+        force = true;
+    }
+
+    try
+    {
+        Utils.TextWriter = new StreamWriter(new FileStream(cmdArgs[2], force ? FileMode.Append : FileMode.CreateNew, FileAccess.Write, FileShare.Read));
+    }
+    catch(Exception ex)
+    {
+        Console.WriteLine(ex);
+        Environment.Exit(1);
+    }
+}
+
 Utils.WriteLine("Hello. This is 'Result' class samples.");
 Utils.WriteLine("");
 
@@ -18,6 +50,8 @@ ShowHelp();
 IEnumerable<Tuple<int, ISample>> samples = CreateSampleList().OrderBy(x => x.Category).ThenBy(x => x.Title).Select((x,i) => new Tuple<int, ISample>(i,x)).ToList();
 
 while (EvalCommand(RequestInput(), samples)) ;
+
+if (Utils.TextWriter != null) Utils.TextWriter.Close();
 
 string RequestInput()
 {
@@ -54,6 +88,7 @@ void ShowHelp()
 
     Utils.WriteLine("");
     Utils.WriteLine("q", commandIndent);
+    Utils.WriteLine(":q", commandIndent);
     Utils.WriteLine("quit", commandIndent);
     Utils.WriteLine("exit", commandIndent);
     Utils.WriteLine("Quit this program.", descIndent);
@@ -63,7 +98,7 @@ bool EvalCommand(string command, IEnumerable<Tuple<int, ISample>> samples)
 {
     switch(command)
     {
-        case string x when x == "q" || x == "quit" || x == "exit":
+        case string x when x == "q" || x == ":q" | x == "quit" || x == "exit":
             Utils.WriteLine("Bye.");
             return false;
 
@@ -107,7 +142,7 @@ void ListSamples(IEnumerable<Tuple<int, ISample>> samples, string command)
             if (!s.Item2.Category.StartsWith(parsedCommand)) continue;
         }
 
-        Utils.WriteLine($"{s.Item1}:{s.Item2.Title}, {s.Item2.Category}");
+        Utils.WriteLine($"{s.Item1}: \"{s.Item2.Title}, {s.Item2.Category}\"");
     }
 }
 
@@ -134,6 +169,8 @@ void ExecAllSamples(IEnumerable<Tuple<int, ISample>> samples)
     {
         Utils.WriteLine("");
         Utils.WriteLine($"Sample: {s.Item2.Title}, {s.Item2.Category}");
+        Utils.Description(sampleIndent, s.Item2.Description);
+        Utils.WriteLine("", sampleIndent);
 
         s.Item2.Exec(sampleIndent);
     }
@@ -179,6 +216,8 @@ void ExecSamples(IEnumerable<Tuple<int, ISample>> samples, string command)
 
         Utils.WriteLine("");
         Utils.WriteLine($"Sample: {s.Item2.Title}, {s.Item2.Category}");
+        Utils.Description(sampleIndent, s.Item2.Description);
+        Utils.WriteLine("", sampleIndent);
 
         s.Item2.Exec(sampleIndent);
     }

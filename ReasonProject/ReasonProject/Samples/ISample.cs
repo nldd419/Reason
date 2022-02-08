@@ -10,6 +10,7 @@ namespace ReasonProject.Samples
     {
         string Category { get; }
         string Title { get; }
+        string[] Description { get; }
         void Exec(int indent);
     }
 }
