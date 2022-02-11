@@ -268,7 +268,6 @@ I'm new to GitHub, so I may take some time to merge your Pull request.
 ## TODO
 - Add tests (IMPORTANT!)
 - Add more samples so that I can find issues of this approach.
-- Add automatic ascii tree creation.
 - Add CI
 
 ## Others
