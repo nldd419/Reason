@@ -208,6 +208,10 @@ You can see full samples [here](docs/output_samples.txt) or by running the sampl
 
 ## Contributions
 
+### How to build
+First, you should run `init-submodules.bat` at the root folder to initialize submodules, or you can do the init process manually by `git submodule init` command.  
+Then, you can open the solution and run the project. 
+
 ### How to add samples
 Inherit `ISample`, name the class 'SampleXXX', and put it under 'Samples/Basic' folder. If the category of the sample is not 'Basic', you should create a new folder under the 'Samples' folder and put the sample in it.
 ```
