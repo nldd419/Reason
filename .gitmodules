@@ -1,0 +1,3 @@
+[submodule "DigDAG"]
+	path = DigDAG
+	url = https://github.com/nldd419/DigDAG.git

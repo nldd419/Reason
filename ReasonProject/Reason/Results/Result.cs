@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using DigDAG;
+
 using Reason.Reasons;
 
 namespace Reason.Results
@@ -13,7 +15,7 @@ namespace Reason.Results
     /// <summary>
     /// Base class of any result.
     /// </summary>
-    public abstract partial class Result: IResultTree
+    public abstract partial class Result: IDagNode
     {
         protected Result(IEnumerable<Result> nextResults, ReasonBase? reason)
         {
@@ -21,6 +23,7 @@ namespace Reason.Results
             this.Reason = reason;
         }
 
+        public IEnumerable<IDagNode> Nexts => NextResults;
         public IEnumerable<Result> NextResults => this.nextResults;
         private readonly ReadOnlyCollection<Result> nextResults;
         protected readonly ReasonBase? Reason;

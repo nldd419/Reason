@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using DigDAG;
+
 using Reason.Reasons;
 
 namespace Reason.Results
@@ -15,7 +17,7 @@ namespace Reason.Results
     /// <summary>
     /// Base class of any result.
     /// </summary>
-    public abstract partial class Result: IResultTree
+    public abstract partial class Result: IDagNode
     {
         /// <summary>
         /// <para>
