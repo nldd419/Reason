@@ -23,7 +23,7 @@ namespace ReasonProject.Samples.Basic
         public string[] Description => new string[]
         {
             "The most difficult issue which has me tearing my hair is errors raised in deep.",
-            "It abandon the reasons of errors occured in descendants' calls, and this is usually inevitable",
+            "It abandons the reasons of errors occured in descendants' calls, and this is usually inevitable",
             "when you have chosen to not use try-catch.",
             "This library has the ability to let them hold all the results occured in descendants.",
         };

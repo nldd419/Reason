@@ -10,7 +10,7 @@ This project has samples to execute, so I just paste some of the outputs.
 Sample: 1.Get Return Value, Basic/Basic
   /*
    * Description:
-   * Implementing logic such thet all functions always returing a result value and a message makes
+   * Implementing logic such that all functions always returing a result value and a message makes
    * me feel better.
    * However, if you're sure that the method never throws any exception and is always success,
    * you can also simply return a primitive value.
@@ -23,7 +23,7 @@ Sample: 1.Get Return Value, Basic/Basic
   Calculating ( 1 / 2 )...
   
   After that, you can retrieve the value using 'Result.Whether' method which takes some callback arguments.
-  One is called when success, another is called when fail.
+  One is called when success, another is called when failure.
   
     result.Whether(
     (val) =>
@@ -113,7 +113,7 @@ Sample: 9.Inspect Result Tree By Depth-First Search, Basic/Inspection
   /*
    * Description:
    * The most difficult issue which has me tearing my hair is errors raised in deep.
-   * It abandon the reasons of errors occured in descendants' calls, and this is usually inevitable
+   * It abandons the reasons of errors occured in descendants' calls, and this is usually inevitable
    * when you have chosen to not use try-catch.
    * This library has the ability to let them hold all the results occured in descendants.
    */
@@ -271,8 +271,6 @@ I'm new to GitHub, so I may take some time to merge your Pull request.
 - Add CI
 
 ## Others
-README version 1.0.0 <= This is just a counter for knowing what version is this README.
-
 Since currently the library version is 0.0.1, there is no built binary and you have to compile it by yourself.
 
 Correcting my broken or unnatural english is all welcome.

@@ -20,7 +20,7 @@ namespace ReasonProject.Samples.Basic
 
         public string[] Description => new string[]
         {
-                "Implementing logic such thet all functions always returing a result value and a message makes",
+                "Implementing logic such that all functions always returing a result value and a message makes",
                 "me feel better.",
                 "However, if you're sure that the method never throws any exception and is always success,",
                 "you can also simply return a primitive value.",
@@ -37,7 +37,7 @@ namespace ReasonProject.Samples.Basic
 
             Utils.WriteLine("", indent);
             Utils.WriteLine("After that, you can retrieve the value using 'Result.Whether' method which takes some callback arguments.", indent);
-            Utils.WriteLine("One is called when success, another is called when fail.", indent);
+            Utils.WriteLine("One is called when success, another is called when failure.", indent);
 
             Utils.WriteLine("", indent);
             Utils.WriteLineForCode(indent,
